@@ -64,6 +64,8 @@ Everything is in `index.html`. The parts you'll most likely want to change:
 | Which meal falls on which weekday | `var MEALS = {` — `0` is Sunday through `6` is Saturday |
 | Running progression | `var RUN = [` — one entry per week, `s` is the short run, `l` is the long one |
 | Dumbbell exercises | `var LIFTS = {` |
+| Exercise video links | `var VID = {` — a YouTube search phrase per exercise; `RUNVIDS` and `RESTVIDS` cover running and rest days |
+| Pinning a specific video | `var PINS = {}` — see below |
 | Phase names and monthly focus | `var PHASES = [` |
 | Weekly professional / mind tasks | `var PRO_WEEK`, `var MIND_WEEK` |
 | Daily timings | `var T =` inside `buildDay` — separate weekday and weekend schedules |
@@ -71,7 +73,29 @@ Everything is in `index.html`. The parts you'll most likely want to change:
 
 Days are generated from these tables rather than written out one by one, so changing a run distance or a recipe updates every day it appears.
 
-**After you edit and redeploy:** bump `CACHE = 'plan112-v1'` to `v2` in `sw.js`. Otherwise phones that installed it may keep serving the old cached version.
+**After you edit and redeploy:** bump `CACHE = 'plan112-v2'` to `v3` in `sw.js`. Otherwise phones that installed it may keep serving the old cached version.
+
+## The exercise videos
+
+Every exercise, plus running form and stretches, has a **watch** link beside it. These open a YouTube *search* rather than one specific video. That's deliberate: individual videos get deleted, made private or re-uploaded, and a dead link on a Tuesday morning is worse than no link. A search always returns something current.
+
+Once you find a demonstration you actually trust, pin it so the link goes straight there. Copy the ID from the YouTube URL — the part after `v=`:
+
+```
+https://www.youtube.com/watch?v=dQw4w9WgXcQ
+                                ^^^^^^^^^^^ this bit
+```
+
+Then add it to the `PINS` table in `index.html`:
+
+```js
+var PINS = {
+  'Goblet squat': 'dQw4w9WgXcQ',
+  'Romanian deadlift': 'someOtherId'
+};
+```
+
+The name on the left must match the exercise name exactly as it appears in `LIFTS`. Anything you haven't pinned keeps using search, so you can build the list up gradually over a few weeks rather than all at once.
 
 ## One health note
 
