@@ -79,6 +79,14 @@
   .block .detail{font-size:13px;color:var(--ink-soft);line-height:1.55;margin-top:3px;}
   .block .detail ul{margin:5px 0 0;padding-left:17px;}
   .block .detail li{margin-bottom:2px;}
+  .exlist{margin-top:7px;border-top:1px solid var(--line);}
+  .ex{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    padding:6px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--ink-soft);}
+  .ex span{line-height:1.4;}
+  .vid{font-size:11px;color:var(--fitness);text-decoration:none;flex-shrink:0;
+    border-bottom:1px solid transparent;padding:2px 0;}
+  .vid:hover,.vid:focus{border-bottom-color:var(--fitness);}
+  .vid::after{content:" ↗";}
   .block input[type=checkbox]{width:17px;height:17px;margin-top:3px;flex-shrink:0;cursor:pointer;accent-color:var(--c);}
   .block.done .title{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--line-strong);}
 
@@ -261,6 +269,46 @@ var LIFTS = {
   legs:['Goblet squat','Reverse lunge','Romanian deadlift','Calf raise','Weighted sit-up + 45 sec plank']
 };
 
+/* Search terms used to build the "watch" links. Search results stay current
+   even when individual videos get deleted or re-uploaded. */
+var VID = {
+  'Dumbbell shoulder press':'dumbbell shoulder press proper form tutorial',
+  'Floor press':'dumbbell floor press form tutorial',
+  'Incline press (prop your back up)':'dumbbell incline press form tutorial',
+  'Lateral raise':'dumbbell lateral raise proper form common mistakes',
+  'Overhead triceps extension':'dumbbell overhead triceps extension form',
+  'Bent-over row':'dumbbell bent over row proper form tutorial',
+  'Single-arm row':'single arm dumbbell row form tutorial',
+  'Dumbbell deadlift':'dumbbell deadlift proper form beginner',
+  'Bicep curl':'dumbbell bicep curl proper form common mistakes',
+  'Rear-delt fly':'dumbbell rear delt fly form tutorial',
+  'Goblet squat':'goblet squat proper form tutorial',
+  'Reverse lunge':'dumbbell reverse lunge proper form',
+  'Romanian deadlift':'dumbbell romanian deadlift RDL form hip hinge',
+  'Calf raise':'dumbbell calf raise form tutorial',
+  'Weighted sit-up + 45 sec plank':'weighted sit up and plank proper form'
+};
+
+/* Pin a specific video once you find one you trust: 'Goblet squat':'dQw4w9WgXcQ'
+   (the string after v= in the YouTube URL). Anything not pinned falls back to search. */
+var PINS = {};
+
+function vlink(name, query){
+  return PINS[name]
+    ? 'https://www.youtube.com/watch?v=' + encodeURIComponent(PINS[name])
+    : 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query || VID[name] || name);
+}
+
+var RUNVIDS = [
+  {t:'Running form basics',  q:'proper running form for beginners technique'},
+  {t:'Dynamic warm-up',      q:'dynamic warm up before running routine'},
+  {t:'Post-run stretches',   q:'post run stretching routine calves hamstrings'}
+];
+
+var RESTVIDS = [
+  {t:'Full-body mobility',   q:'full body mobility routine rest day 15 minutes'}
+];
+
 var PHASES = [
   {n:'Reset',  from:0,  to:18,  pro:'Get the L35 criteria in writing and pick your flagship project.', mind:'Show Your Work (Austin Kleon) or Don\'t Make Me Think', sets:'3 × 10, lighter weight — form first'},
   {n:'Build',  from:19, to:49,  pro:'Learn Spline and one AI 3D asset tool end to end.',              mind:'Atomic Habits (James Clear)',                          sets:'3 × 12, same weight'},
@@ -316,7 +364,8 @@ function buildDay(i){
     var isLong = (wd===5);
     blocks.push({id:'fit',time:T.fit,cat:'fitness',
       title:'Run — '+(isLong?RUN[wk].l:RUN[wk].s),
-      detail:'5 min brisk walk to warm up, then the main set, then 5 min walk and calf/hamstring stretches. Easy pace means you could still hold a conversation.'});
+      detail:'5 min brisk walk to warm up, then the main set, then 5 min walk and calf/hamstring stretches. Easy pace means you could still hold a conversation.',
+      vids:RUNVIDS});
   } else if(wd===2||wd===4||wd===6){
     var kind = wd===2?'push':(wd===4?'pull':'legs');
     var label = wd===2?'Dumbbells — push':(wd===4?'Dumbbells — pull':'Dumbbells — legs & core');
@@ -324,7 +373,8 @@ function buildDay(i){
       detail:ph.sets+'. Rest 60–90 sec between sets.',list:LIFTS[kind]});
   } else {
     blocks.push({id:'fit',time:T.fit,cat:'fitness',title:'Rest day — 30 min walk + stretch',
-      detail:'Active recovery only. Then the weekly check-in: weigh in, notice how clothes fit, and look at how the last seven days actually went.'});
+      detail:'Active recovery only. Then the weekly check-in: weigh in, notice how clothes fit, and look at how the last seven days actually went.',
+      vids:RESTVIDS});
   }
 
   /* meals */
@@ -505,9 +555,20 @@ function renderDay(){
       '<div class="body"><div class="title">'+b.title+'</div>';
     if(b.detail) html += '<div class="detail">'+b.detail+'</div>';
     if(b.list){
-      html += '<div class="detail"><ul>';
-      b.list.forEach(function(x){ html += '<li>'+x+'</li>'; });
-      html += '</ul></div>';
+      html += '<div class="exlist">';
+      b.list.forEach(function(x){
+        html += '<div class="ex"><span>'+x+'</span>'+
+          '<a class="vid mono" href="'+vlink(x)+'" target="_blank" rel="noopener noreferrer">watch</a></div>';
+      });
+      html += '</div>';
+    }
+    if(b.vids){
+      html += '<div class="exlist">';
+      b.vids.forEach(function(v){
+        html += '<div class="ex"><span>'+v.t+'</span>'+
+          '<a class="vid mono" href="'+vlink(v.t, v.q)+'" target="_blank" rel="noopener noreferrer">watch</a></div>';
+      });
+      html += '</div>';
     }
     if(b.recipe){
       var r = R[b.recipe];
