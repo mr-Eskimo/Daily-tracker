@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>112 Days</title>
+<meta name="theme-color" content="#e8e9e2">
+<meta name="description" content="A 112-day daily plan: fitness, diet, focus, craft and reading, tracked day by day.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#e8e9e2; --paper-raised:#f4f4ee; --ink:#20241f; --ink-soft:#5b5f54;
+    --line:#c7c9bc; --line-strong:#9a9d8d;
+    --health:#b1462e; --fitness:#a8791c; --diet:#46754a; --focus:#2f6f77;
+    --pro:#39447e; --mind:#6a4d78;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:'Archivo',Segoe UI,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;}
+  .app{max-width:800px;margin:0 auto;padding:24px 18px 72px;}
+
+  /* masthead */
+  .masthead{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap;
+    border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:18px;}
+  .masthead h1{margin:0 0 4px;font-size:25px;letter-spacing:-.01em;}
+  .masthead .sub{margin:0;color:var(--ink-soft);font-size:14px;}
+  .mast-right{display:flex;gap:22px;text-align:right;}
+  .stat .big{font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:600;line-height:1;}
+  .stat .cap{font-size:11.5px;color:var(--ink-soft);margin-top:3px;}
+
+  /* toolbar */
+  .toolbar{display:flex;align-items:center;gap:8px;margin:-6px 0 18px;}
+  .toolbar .savestate{flex:1;font-size:11.5px;color:var(--ink-soft);opacity:0;transition:opacity .3s ease;}
+
+  /* week strip */
+  .weekbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .weekbar .label{font-size:13px;font-weight:600;flex:1;}
+  .navbtn{font-family:inherit;font-size:13px;font-weight:600;background:transparent;
+    border:1.5px solid var(--line-strong);color:var(--ink);border-radius:3px;
+    padding:5px 10px;cursor:pointer;}
+  .navbtn:hover{border-color:var(--ink);}
+  .navbtn:disabled{opacity:.35;cursor:default;}
+  .daystrip{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:22px;}
+  .daypill{background:var(--paper-raised);border:1.5px solid var(--line);border-radius:4px;
+    padding:7px 3px 6px;text-align:center;cursor:pointer;font-family:inherit;color:var(--ink);}
+  .daypill .dow{font-size:10px;color:var(--ink-soft);}
+  .daypill .dnum{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;line-height:1.25;}
+  .daypill .dot{width:5px;height:5px;border-radius:50%;background:var(--line);margin:3px auto 0;}
+  .daypill .dot.part{background:var(--fitness);}
+  .daypill .dot.full{background:var(--diet);}
+  .daypill.sel{border-color:var(--ink);background:var(--ink);color:var(--paper-raised);}
+  .daypill.sel .dow{color:var(--line);}
+  .daypill.today:not(.sel){border-color:var(--ink);}
+  .daypill.out{opacity:.3;cursor:default;}
+
+  /* day header */
+  .dayhead{display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+    flex-wrap:wrap;margin-bottom:4px;}
+  .dayhead h2{margin:0;font-size:20px;}
+  .dayhead .meta{font-size:12.5px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;}
+  .progline{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin:10px 0 20px;}
+  .progline div{height:100%;background:var(--ink);transition:width .25s ease;}
+
+  /* blocks */
+  .block{display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--line);}
+  .block:last-of-type{border-bottom:none;}
+  .block .time{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-soft);
+    width:46px;flex-shrink:0;padding-top:3px;}
+  .block .rail{width:3px;border-radius:2px;flex-shrink:0;background:var(--c);}
+  .block .body{flex:1;min-width:0;}
+  .block .title{font-size:14.5px;font-weight:600;line-height:1.35;}
+  .block .detail{font-size:13px;color:var(--ink-soft);line-height:1.55;margin-top:3px;}
+  .block .detail ul{margin:5px 0 0;padding-left:17px;}
+  .block .detail li{margin-bottom:2px;}
+  .block input[type=checkbox]{width:17px;height:17px;margin-top:3px;flex-shrink:0;cursor:pointer;accent-color:var(--c);}
+  .block.done .title{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--line-strong);}
+
+  details.rec{margin-top:7px;border:1px solid var(--line);border-radius:4px;background:var(--paper);}
+  details.rec summary{list-style:none;cursor:pointer;padding:7px 10px;font-size:12.5px;font-weight:600;
+    color:var(--ink-soft);display:flex;justify-content:space-between;gap:8px;}
+  details.rec summary::-webkit-details-marker{display:none;}
+  details.rec summary::after{content:"recipe +";font-weight:400;font-family:'IBM Plex Mono',monospace;font-size:11px;}
+  details.rec[open] summary::after{content:"recipe –";}
+  details.rec .rbody{padding:0 10px 10px;font-size:12.5px;line-height:1.6;color:var(--ink-soft);}
+  details.rec .rbody b{color:var(--ink);font-weight:600;}
+
+  /* detox row */
+  .detox{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:20px 0 6px;}
+  .toggle{font-family:inherit;font-size:13px;font-weight:600;background:var(--paper-raised);
+    border:1.5px solid var(--line);border-radius:4px;padding:10px;cursor:pointer;color:var(--ink-soft);
+    text-align:left;line-height:1.3;}
+  .toggle.on{border-color:var(--health);color:var(--ink);background:#f0e3de;}
+  .toggle .st{display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+    font-weight:400;margin-top:3px;}
+
+  h3.sec{font-size:13px;font-weight:600;color:var(--ink-soft);margin:30px 0 10px;
+    border-bottom:1px solid var(--line);padding-bottom:6px;}
+
+  /* heatmap */
+  .heat{display:grid;grid-template-columns:34px repeat(7,1fr);gap:3px;align-items:center;}
+  .heat .wk{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-soft);}
+  .heat .hd{font-size:9.5px;color:var(--ink-soft);text-align:center;}
+  .heat .cell{aspect-ratio:1;border-radius:2px;background:var(--paper-raised);
+    border:1px solid var(--line);cursor:pointer;}
+  .heat .cell.out{opacity:.25;cursor:default;}
+  .heat .cell.sel{outline:2px solid var(--ink);outline-offset:1px;}
+
+  .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;}
+  .pil{background:var(--paper-raised);border:1px solid var(--line);border-radius:4px;padding:11px 12px;}
+  .pil .n{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .pil .n i{width:8px;height:8px;border-radius:50%;background:var(--c);display:inline-block;}
+  .pil .v{font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:600;margin-top:5px;}
+  .pil .c{font-size:11px;color:var(--ink-soft);}
+
+  .note{font-size:12.5px;color:var(--ink-soft);border-left:2px solid var(--line-strong);
+    padding-left:12px;margin:20px 0;line-height:1.6;}
+  .foot{font-size:11.5px;color:var(--ink-soft);text-align:center;margin-top:34px;}
+
+  @media(max-width:520px){
+    .masthead{flex-direction:column;align-items:flex-start;}
+    .mast-right{text-align:left;gap:26px;}
+    .daypill .dnum{font-size:14px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="masthead">
+    <div>
+      <h1>112 days</h1>
+      <p class="sub" id="phaseLine">—</p>
+    </div>
+    <div class="mast-right">
+      <div class="stat"><div class="big mono" id="statLeft">–</div><div class="cap">days left</div></div>
+      <div class="stat"><div class="big mono" id="statDone">–</div><div class="cap">days logged</div></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span class="savestate mono" id="saveState"></span>
+    <button class="navbtn" id="exportBtn">Export progress</button>
+    <button class="navbtn" id="importBtn">Import</button>
+    <input type="file" id="importFile" accept="application/json,.json" hidden>
+  </div>
+
+  <div class="weekbar">
+    <button class="navbtn" id="prevW">←</button>
+    <div class="label" id="weekLabel">Week —</div>
+    <button class="navbtn" id="todayBtn">Today</button>
+    <button class="navbtn" id="nextW">→</button>
+  </div>
+  <div class="daystrip" id="strip"></div>
+
+  <div class="dayhead">
+    <h2 id="dayTitle">—</h2>
+    <div class="meta" id="dayMeta"></div>
+  </div>
+  <div class="progline"><div id="dayProg" style="width:0%"></div></div>
+
+  <div id="blocks"></div>
+
+  <h3 class="sec">Daily detox check</h3>
+  <div class="detox" id="detox"></div>
+
+  <h3 class="sec">16 weeks at a glance</h3>
+  <div class="heat" id="heat"></div>
+
+  <h3 class="sec">Where each pillar stands</h3>
+  <div class="pillars" id="pillars"></div>
+
+  <p class="note" id="safetyNote">Quitting alcohol and cigarettes while also cutting weight is a lot to carry at once. If you've been drinking heavily, please do the alcohol part with a doctor's input — sudden withdrawal can be medically serious, not just uncomfortable. Treat the run distances and meal sizes here as a starting template, not a prescription: adjust them to how your body actually responds, and get a professional to tune it if progress stalls or you feel unwell.</p>
+
+  <p class="foot">Progress is saved on this device, in this browser. Use Export before switching phones or clearing browser data, then Import on the other device.</p>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- recipes ---------------- */
+var R = {
+  /* breakfasts */
+  dalia:{n:'Vegetable dalia',t:'20 min',i:'½ cup broken wheat, ½ cup chopped carrot/beans/peas, ¼ tsp jeera, ½ tsp ghee, salt, coriander',s:'Dry-roast dalia 2 min. Add 1½ cups water, vegetables, salt. Pressure cook 2 whistles or boil covered 15 min. Temper jeera in ½ tsp ghee, stir in, finish with coriander.'},
+  bhurji:{n:'Boiled egg bhurji',t:'15 min',i:'2–3 eggs, 1 onion, 1 tomato, 1 green chilli, ¼ tsp turmeric, ½ tsp oil, salt, coriander',s:'Boil eggs 8–9 min, peel, mash roughly. Sauté onion, tomato, chilli in ½ tsp oil till soft. Add turmeric and salt, fold in mashed egg, warm 2 min. Finish with coriander.'},
+  idli:{n:'Idli with vegetable sambar',t:'20 min (batter ready)',i:'3–4 idlis, toor dal, drumstick/pumpkin/carrot, sambar powder, tamarind, curry leaves',s:'Steam idlis 10–12 min. For sambar: boil toor dal soft, add chopped vegetables and tamarind water, simmer with sambar powder till vegetables are tender. Skip the coconut chutney and the ghee drizzle for now.'},
+  oats:{n:'Masala oats',t:'10 min',i:'½ cup rolled oats, ½ cup mixed vegetables, ¼ tsp turmeric, pinch chilli powder, salt, lemon',s:'Boil 1¼ cups water with vegetables, turmeric, chilli and salt for 4 min. Add oats, simmer 3–4 min till thick. Squeeze lemon over before eating.'},
+  dhokla:{n:'Besan dhokla',t:'25 min',i:'1 cup besan, ¾ cup curd, ¾ tsp eno, ¼ tsp turmeric, ginger-chilli paste, salt; temper: mustard seeds, curry leaves',s:'Whisk besan, curd, turmeric, ginger-chilli, salt and a little water into a smooth batter. Add eno, pour into a greased tin, steam 15–18 min till a knife comes out clean. Temper mustard seeds and curry leaves in ½ tsp oil, pour over, cut into squares.'},
+  chanab:{n:'Boiled kala chana chaat',t:'15 min (soaked overnight)',i:'¾ cup soaked kala chana, onion, tomato, green chilli, chaat masala, lemon, coriander',s:'Pressure cook soaked chana with salt, 3–4 whistles, drain. Toss warm with chopped onion, tomato, chilli, chaat masala, lemon and coriander.'},
+  fruitbowl:{n:'Fruit, curd & boiled egg bowl',t:'10 min',i:'1 cup curd, 1 banana or apple, papaya/pomegranate, 2 boiled eggs, few soaked almonds',s:'Boil eggs 9 min. Layer curd with chopped fruit and almonds in a bowl; eat the eggs alongside with a pinch of pepper and salt. No cooking beyond the boil.'},
+
+  /* lunches */
+  khichdi:{n:'Moong dal khichdi + curd',t:'25 min',i:'½ cup rice, ½ cup split moong dal, ¼ tsp turmeric, jeera, 1 tsp ghee, salt, curd',s:'Rinse rice and dal. Pressure cook with turmeric, salt and 3 cups water, 3 whistles. Temper jeera in 1 tsp ghee and stir through. Serve with a bowl of curd.'},
+  moongrice:{n:'Moong dal + brown rice + cucumber salad',t:'30 min',i:'½ cup split moong dal, ¾ cup brown rice, turmeric, jeera, hing, 1 dried red chilli, curry leaves, cucumber, onion, lemon',s:'Boil dal with turmeric till soft. Cook brown rice separately. Temper jeera, hing, red chilli and curry leaves in 1 tsp ghee, pour over dal. Salad: cucumber, onion, lemon, salt.'},
+  rajma:{n:'Rajma + rice + salad',t:'40 min (soaked overnight)',i:'¾ cup soaked rajma, onion, tomato, ginger-garlic, 1 tsp oil, rajma masala, rice',s:'Pressure cook rajma with salt, 5–6 whistles till fully soft. Cook onion-tomato-ginger-garlic base in 1 tsp oil, add masala, then the rajma with its water. Simmer 10 min so it thickens on its own instead of with cream.'},
+  sambarrice:{n:'Sambar + rice + steamed vegetables',t:'30 min',i:'toor dal, tamarind, sambar powder, mixed vegetables, curry leaves, rice',s:'Boil toor dal soft. Add tamarind water, chopped vegetables and sambar powder, simmer till tender. Steam extra vegetables separately, 6–8 min. Serve over rice.'},
+  chicksalad:{n:'Boiled chicken or paneer salad + 2 phulka',t:'25 min',i:'150 g chicken breast or paneer, bay leaf, peppercorns, cucumber, onion, tomato, mint, lemon, jeera powder',s:'Boil chicken (or simmer paneer 3 min) with bay leaf, peppercorns and salt till just cooked. Cube and toss with cucumber, onion, tomato, mint, lemon and jeera powder. Eat with 2 phulkas, no ghee on top.'},
+  chole:{n:'Chole + 2 phulka',t:'40 min (soaked overnight)',i:'¾ cup soaked chana, onion, tomato, ginger-garlic, chole masala, 1 tsp oil, salt',s:'Pressure cook chana with salt 5–6 whistles. Make a base of onion, tomato, ginger-garlic in 1 tsp oil, add chole masala, then chana with its liquid. Mash a few chickpeas to thicken instead of adding fat.'},
+  pulao:{n:'Steamed vegetable pulao + raita',t:'30 min',i:'¾ cup rice, carrot/beans/peas/capsicum, 1 tsp ghee, whole spices, curd, cucumber',s:'Lightly warm whole spices in 1 tsp ghee, add rice and vegetables, then 1½ cups water. Cook covered till done, rest 5 min, fluff. Raita: curd whisked with grated cucumber, jeera powder, salt.'},
+
+  /* snacks */
+  nutsfruit:{n:'Fruit + handful of nuts',t:'2 min',i:'1 seasonal fruit, 5–6 almonds or walnuts',s:'No cooking. Keep the nut portion to one small handful — it is a snack, not a meal.'},
+  sprouts:{n:'Moong sprouts chaat',t:'10 min',i:'1 cup moong sprouts, onion, tomato, cucumber, lemon, chaat masala, coriander',s:'Boil sprouts 5–7 min till just tender, drain. Toss with chopped onion, tomato, cucumber, lemon, chaat masala and coriander.'},
+  corn:{n:'Boiled corn chaat',t:'12 min',i:'1 cup corn kernels, lemon, chaat masala, roasted peanuts, coriander',s:'Boil corn 8–10 min, drain. Mix with lemon, chaat masala, a spoon of roasted peanuts and coriander.'},
+  buttermilk:{n:'Buttermilk + fruit',t:'5 min',i:'1 glass chaas (curd, water, jeera powder, salt, coriander), 1 fruit',s:'Whisk curd with water, jeera powder, salt and coriander. Drink alongside a fruit — good mid-evening option that is not fried.'},
+  sweetpot:{n:'Boiled sweet potato chaat',t:'20 min',i:'1 medium sweet potato, lemon, chaat masala, black pepper, coriander',s:'Boil sweet potato whole till a knife slides in, peel and cube. Toss warm with lemon, chaat masala, pepper and coriander.'},
+  chana:{n:'Roasted chana + orange',t:'2 min',i:'1 small bowl roasted chana, 1 orange or seasonal citrus',s:'No cooking. Useful desk snack for the 5 pm dip — keeps you off the office biscuits.'},
+  proteinsnack:{n:'Boiled egg whites or paneer cubes',t:'12 min',i:'2–3 eggs or 80 g paneer, chaat masala, black pepper, lemon',s:'Boil eggs 9 min and use the whites, or cube paneer raw. Dust with chaat masala, pepper and lemon.'},
+
+  /* dinners */
+  curdrice:{n:'Curd rice + cucumber',t:'15 min',i:'¾ cup cooked rice, 1 cup curd, cucumber, jeera, curry leaves, ½ tsp ghee, salt',s:'Mash warm rice into curd with salt. Temper jeera and curry leaves in ½ tsp ghee, stir through. Serve with cucumber slices. Light enough for a Sunday night.'},
+  masoor:{n:'Masoor dal + steamed lauki + 1 phulka',t:'25 min',i:'½ cup masoor dal, lauki, turmeric, jeera, garlic, 1 tsp oil, salt',s:'Boil masoor dal with turmeric till soft. Steam cubed lauki 8 min, toss with jeera and salt. Temper garlic and jeera in 1 tsp oil over the dal. One phulka on the side.'},
+  soup:{n:'Clear vegetable soup + boiled paneer toss',t:'25 min',i:'carrot, beans, cabbage, sweetcorn, garlic, pepper, 100 g paneer, lemon',s:'Simmer chopped vegetables and crushed garlic in 3 cups water 15 min, season with pepper and salt. Separately simmer paneer cubes 3 min, toss with pepper and lemon. Eat together.'},
+  eggcurry:{n:'Egg curry + 1 phulka',t:'25 min',i:'3 boiled eggs, onion, tomato, ginger-garlic, turmeric, garam masala, 1 tsp oil',s:'Boil and halve the eggs. Cook onion, tomato, ginger-garlic in 1 tsp oil, add turmeric and garam masala with a splash of water for a thin gravy. Slide eggs in, simmer 5 min.'},
+  toordal:{n:'Toor dal + steamed beans + 1 phulka',t:'25 min',i:'½ cup toor dal, French beans, turmeric, jeera, hing, 1 tsp ghee, salt',s:'Boil toor dal with turmeric till soft. Steam beans 6 min, season with salt and pepper. Temper jeera and hing in 1 tsp ghee over the dal.'},
+  chickencurry:{n:'Light chicken curry + salad',t:'35 min',i:'200 g chicken, onion, tomato, ginger-garlic, curd, turmeric, garam masala, 1 tsp oil',s:'Cook onion, ginger-garlic in 1 tsp oil, add tomato and spices, then chicken and a little whisked curd. Cover and cook in its own moisture, no cream, no extra oil. Big salad alongside. Swap in paneer or soya if you want it vegetarian.'},
+  idlidinner:{n:'Steamed idli/dhokla + light sambar',t:'20 min',i:'3 idlis or 4 dhokla pieces, thin vegetable sambar',s:'Steam and serve with a thin, vegetable-heavy sambar. Keep dinner on the lighter side on strength-training days so you sleep well.'}
+};
+
+/* meals by weekday: 0 = Sunday */
+var MEALS = {
+  0:{b:'dalia',     l:'khichdi',    s:'nutsfruit',     d:'curdrice'},
+  1:{b:'bhurji',    l:'moongrice',  s:'sprouts',       d:'masoor'},
+  2:{b:'idli',      l:'rajma',      s:'corn',          d:'soup'},
+  3:{b:'oats',      l:'sambarrice', s:'buttermilk',    d:'eggcurry'},
+  4:{b:'dhokla',    l:'chicksalad', s:'sweetpot',      d:'toordal'},
+  5:{b:'chanab',    l:'chole',      s:'chana',         d:'chickencurry'},
+  6:{b:'fruitbowl', l:'pulao',      s:'proteinsnack',  d:'idlidinner'}
+};
+
+/* run plan per week index 0..15 */
+var RUN = [
+  {s:'8 × (1 min easy run / 2 min walk)', l:'10 × (1 min easy run / 2 min walk)'},
+  {s:'8 × (1 min run / 2 min walk)',      l:'10 × (1 min run / 2 min walk)'},
+  {s:'6 × (2 min run / 2 min walk)',      l:'8 × (2 min run / 2 min walk)'},
+  {s:'12 min continuous, easy pace',      l:'15 min continuous, easy pace'},
+  {s:'15 min continuous',                 l:'18 min continuous'},
+  {s:'18 min continuous',                 l:'22 min continuous'},
+  {s:'20 min continuous',                 l:'25 min continuous'},
+  {s:'22 min continuous',                 l:'28 min continuous'},
+  {s:'25 min continuous',                 l:'30 min continuous'},
+  {s:'25 min + 4 × 20 sec strides',       l:'32 min continuous'},
+  {s:'28 min continuous',                 l:'35 min continuous'},
+  {s:'25 min easy',                       l:'First full 5K — steady, ignore the clock'},
+  {s:'30 min continuous',                 l:'5K at a comfortable pace'},
+  {s:'30 min + 4 strides',                l:'38 min continuous'},
+  {s:'25 min easy',                       l:'5K time trial — see where you landed'},
+  {s:'30 min easy',                       l:'40 min continuous, festive-season maintenance'}
+];
+
+var LIFTS = {
+  push:['Dumbbell shoulder press','Floor press','Incline press (prop your back up)','Lateral raise','Overhead triceps extension'],
+  pull:['Bent-over row','Single-arm row','Dumbbell deadlift','Bicep curl','Rear-delt fly'],
+  legs:['Goblet squat','Reverse lunge','Romanian deadlift','Calf raise','Weighted sit-up + 45 sec plank']
+};
+
+var PHASES = [
+  {n:'Reset',  from:0,  to:18,  pro:'Get the L35 criteria in writing and pick your flagship project.', mind:'Show Your Work (Austin Kleon) or Don\'t Make Me Think', sets:'3 × 10, lighter weight — form first'},
+  {n:'Build',  from:19, to:49,  pro:'Learn Spline and one AI 3D asset tool end to end.',              mind:'Atomic Habits (James Clear)',                          sets:'3 × 12, same weight'},
+  {n:'Push',   from:50, to:79,  pro:'Ship AI-assisted 3D or UI work into a real deliverable.',        mind:'Something current on AI-assisted design',              sets:'4 × 10, go heavier'},
+  {n:'Land',   from:80, to:111, pro:'Build the case study and book the promotion conversation.',      mind:'Fiction — read purely to rest',                        sets:'3 × 12, maintain'}
+];
+
+var PRO_WEEK = {
+  0:{t:'Plan the week',      d:'15 min: map the week ahead, check progress against the L35 criteria you wrote down.'},
+  1:{t:'UI craft drill',     d:'Pick one screen from last week and fix one thing properly — spacing rhythm, type scale, or contrast.'},
+  2:{t:'Spline session',     d:'Build in Spline: a 3D scene you could actually embed in a product page.'},
+  3:{t:'Teardown',           d:'Study one product UI you admire and rebuild a single screen from scratch in Figma.'},
+  4:{t:'AI asset practice',  d:'Generate an asset in Meshy or Tripo, clean it up, drop it into your Spline scene.'},
+  5:{t:'Promotion log',      d:'Write down this week\'s wins with numbers attached. This is the document your promotion case is built from.'},
+  6:{t:'Deep craft block',   d:'90 min uninterrupted on the flagship project — the one that makes the L35 case.'}
+};
+
+var MIND_WEEK = {
+  0:{t:'Weekly retro',       d:'15 min: what held this week, what slipped, what you change next week.'},
+  1:{t:'Sketch practice',    d:'15 min of loose UI sketching on paper — no tool, no undo button.'},
+  2:{t:'Journal',            d:'10 min. Especially useful on the days the cravings are loudest.'},
+  3:{t:'Sketch practice',    d:'15 min exploring one interaction idea you have not tried before.'},
+  4:{t:'Journal',            d:'10 min, unstructured.'},
+  5:{t:'Sketch practice',    d:'15 min — visual play, nothing that has to ship.'},
+  6:{t:'Personal project',   d:'60 min on the project that has nothing to do with client work.'}
+};
+
+/* ---------------- date helpers ---------------- */
+var START = new Date(2026,8,12), END = new Date(2027,0,1), TOTAL = 112;
+var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function pad(n){return n<10?'0'+n:''+n;}
+function key(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function addDays(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);}
+function idxOf(d){return Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-START)/86400000);}
+function fromIdx(i){return addDays(START,i);}
+function phaseOf(i){for(var p=0;p<PHASES.length;p++){if(i<=PHASES[p].to) return PHASES[p];}return PHASES[3];}
+
+/* ---------------- build a day ---------------- */
+function buildDay(i){
+  var d = fromIdx(i), wd = d.getDay(), wk = Math.floor(i/7), ph = phaseOf(i);
+  var weekend = (wd===0||wd===6);
+  var m = MEALS[wd], blocks = [];
+
+  var T = weekend
+    ? {wake:'07:00',fit:'07:30',bf:'09:00',focus:'10:00',pro:'11:30',lunch:'13:30',snack:'17:00',dinner:'20:00',read:'21:30',mind:'22:00',wind:'22:45'}
+    : {wake:'06:00',fit:'06:20',bf:'07:30',focus:'09:30',lunch:'13:15',snack:'17:30',shut:'18:30',dinner:'20:00',pro:'21:00',read:'22:00',mind:'22:30',wind:'22:45'};
+
+  blocks.push({id:'wake',time:T.wake,cat:'health',title:'Wake + 500 ml water',detail:'Five minutes of stretching before anything else. No phone until after the workout.'});
+
+  /* fitness */
+  if(wd===1||wd===3||wd===5){
+    var isLong = (wd===5);
+    blocks.push({id:'fit',time:T.fit,cat:'fitness',
+      title:'Run — '+(isLong?RUN[wk].l:RUN[wk].s),
+      detail:'5 min brisk walk to warm up, then the main set, then 5 min walk and calf/hamstring stretches. Easy pace means you could still hold a conversation.'});
+  } else if(wd===2||wd===4||wd===6){
+    var kind = wd===2?'push':(wd===4?'pull':'legs');
+    var label = wd===2?'Dumbbells — push':(wd===4?'Dumbbells — pull':'Dumbbells — legs & core');
+    blocks.push({id:'fit',time:T.fit,cat:'fitness',title:label,
+      detail:ph.sets+'. Rest 60–90 sec between sets.',list:LIFTS[kind]});
+  } else {
+    blocks.push({id:'fit',time:T.fit,cat:'fitness',title:'Rest day — 30 min walk + stretch',
+      detail:'Active recovery only. Then the weekly check-in: weigh in, notice how clothes fit, and look at how the last seven days actually went.'});
+  }
+
+  /* meals */
+  blocks.push({id:'bf',time:T.bf,cat:'diet',title:'Breakfast — '+R[m.b].n,recipe:m.b});
+  blocks.push({id:'focus',time:T.focus,cat:'focus',
+    title: weekend?'Protected block — no admin':'Deep work block — 90 min, no email',
+    detail: weekend?'One protected stretch for your own work before the day fills up with errands.':'The first 90 minutes of the workday go to the single hardest thing on your list. Inbox and chat stay closed. This is the time-management habit that actually moves the promotion.'});
+  blocks.push({id:'lunch',time:T.lunch,cat:'diet',title:'Lunch — '+R[m.l].n,recipe:m.l});
+  blocks.push({id:'snack',time:T.snack,cat:'diet',title:'Snack — '+R[m.s].n,recipe:m.s});
+  if(!weekend) blocks.push({id:'shut',time:T.shut,cat:'focus',title:'Shutdown — 10 min',
+    detail:'Close open loops, write tomorrow\'s three priorities, then stop thinking about work. A defined end to the workday is what makes the evening blocks survivable.'});
+  blocks.push({id:'dinner',time:T.dinner,cat:'diet',title:'Dinner — '+R[m.d].n,recipe:m.d});
+
+  /* professional + mind */
+  var pw = PRO_WEEK[wd], mw = MIND_WEEK[wd];
+  blocks.push({id:'pro',time:T.pro,cat:'pro',title:pw.t+' — 45 min',detail:pw.d+' This month: '+ph.pro});
+  blocks.push({id:'read',time:T.read,cat:'mind',title:'Reading — 20 min',detail:'This month\'s book: '+ph.mind});
+  blocks.push({id:'mind',time:T.mind,cat:'mind',title:mw.t,detail:mw.d});
+  blocks.push({id:'wind',time:T.wind,cat:'health',title:'Wind-down, phone away',detail:'Lights low, screens down, in bed by 23:00. Sleep is doing half the work on the weight and the cravings.'});
+
+  blocks.sort(function(a,b){ return a.time < b.time ? -1 : (a.time > b.time ? 1 : 0); });
+  return {i:i,d:d,wd:wd,wk:wk,ph:ph,blocks:blocks};
+}
+
+var TOGGLES = [
+  {id:'alc',  t:'Alcohol-free'},
+  {id:'smk',  t:'Smoke-free'},
+  {id:'water',t:'3 L water'},
+  {id:'steps',t:'7k+ steps'}
+];
+
+/* ---------------- state ---------------- */
+var state = {done:{}};
+var sel = 0, weekView = 0, saveTimer = null;
+
+function dayState(k){ if(!state.done[k]) state.done[k]={}; return state.done[k]; }
+function totalTasks(day){ return day.blocks.length + TOGGLES.length; }
+function doneCount(i){
+  var k = key(fromIdx(i)), s = state.done[k];
+  if(!s) return 0;
+  var c = 0; for(var x in s){ if(s[x]) c++; }
+  return c;
+}
+function dayPct(i){
+  var t = totalTasks(buildDay(i));
+  return Math.min(100, Math.round(100*doneCount(i)/t));
+}
+
+var STORE_KEY = 'plan112.v1';
+var storeOk = true;
+
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){
+    try{
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+      flash('Saved');
+    }catch(e){
+      storeOk = false;
+      flash('Not saving — storage blocked');
+      console.error('save failed', e);
+    }
+  }, 350);
+}
+
+function loadLocal(){
+  try{
+    var raw = localStorage.getItem(STORE_KEY);
+    if(raw){
+      var p = JSON.parse(raw);
+      if(p && p.done) state.done = p.done;
+    }
+  }catch(e){
+    storeOk = false;
+    console.error('load failed', e);
+  }
+}
+
+var flashTimer = null;
+function flash(msg){
+  var el = document.getElementById('saveState');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(function(){ el.style.opacity = '0'; }, 1600);
+}
+
+function exportData(){
+  var payload = {app:'plan112', version:1, exported:new Date().toISOString(), done:state.done};
+  var blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'plan112-progress-' + key(new Date()) + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
+function importData(file){
+  var fr = new FileReader();
+  fr.onload = function(){
+    try{
+      var p = JSON.parse(fr.result);
+      if(!p || !p.done) throw new Error('no progress data in that file');
+      var days = Object.keys(p.done).length;
+      if(!confirm('Merge '+days+' logged days into this device? Anything already ticked here is kept.')) return;
+      for(var k in p.done){
+        if(!state.done[k]) state.done[k] = {};
+        for(var t in p.done[k]){ if(p.done[k][t]) state.done[k][t] = true; }
+      }
+      save(); renderAll(); flash('Imported '+days+' days');
+    }catch(e){
+      alert("Couldn't read that file. Pick a plan112-progress JSON you exported earlier.");
+      console.error(e);
+    }
+  };
+  fr.readAsText(file);
+}
+
+/* ---------------- render ---------------- */
+function renderMast(){
+  var now = new Date(), today = new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  var left = Math.max(0, Math.round((END-today)/86400000));
+  document.getElementById('statLeft').textContent = left;
+  var logged = 0;
+  for(var i=0;i<TOTAL;i++){ if(doneCount(i)>0) logged++; }
+  document.getElementById('statDone').textContent = logged;
+  var ph = phaseOf(sel);
+  document.getElementById('phaseLine').textContent =
+    'Phase: ' + ph.n + ' · ' + ph.pro;
+}
+
+function renderStrip(){
+  var wrap = document.getElementById('strip');
+  wrap.innerHTML = '';
+  var base = weekView*7;
+  var todayIdx = idxOf(new Date());
+  for(var j=0;j<7;j++){
+    var i = base+j;
+    var btn = document.createElement('button');
+    btn.className = 'daypill';
+    if(i<0||i>=TOTAL){
+      btn.className += ' out'; btn.disabled = true;
+      var dd = fromIdx(i);
+      btn.innerHTML = '<div class="dow">'+DOW[dd.getDay()]+'</div><div class="dnum mono">'+dd.getDate()+'</div><div class="dot"></div>';
+    } else {
+      var d = fromIdx(i), p = dayPct(i);
+      if(i===sel) btn.className += ' sel';
+      if(i===todayIdx) btn.className += ' today';
+      var dotc = p>=100?'full':(p>0?'part':'');
+      btn.innerHTML = '<div class="dow">'+DOW[d.getDay()]+'</div><div class="dnum mono">'+d.getDate()+'</div><div class="dot '+dotc+'"></div>';
+      (function(ix){ btn.addEventListener('click', function(){ sel=ix; renderAll(); }); })(i);
+    }
+    wrap.appendChild(btn);
+  }
+  document.getElementById('weekLabel').textContent =
+    'Week ' + (weekView+1) + ' of 16 · ' + MON[fromIdx(Math.max(0,base)).getMonth()];
+  document.getElementById('prevW').disabled = weekView<=0;
+  document.getElementById('nextW').disabled = weekView>=15;
+}
+
+function renderDay(){
+  var day = buildDay(sel), d = day.d, k = key(d), st = dayState(k);
+  document.getElementById('dayTitle').textContent =
+    DOW[d.getDay()]+', '+d.getDate()+' '+MON[d.getMonth()];
+  document.getElementById('dayMeta').textContent =
+    'day '+(sel+1)+'/112 · week '+(day.wk+1)+' · '+day.ph.n;
+
+  var wrap = document.getElementById('blocks');
+  wrap.innerHTML = '';
+  day.blocks.forEach(function(b){
+    var el = document.createElement('div');
+    el.className = 'block' + (st[b.id]?' done':'');
+    el.style.setProperty('--c','var(--'+b.cat+')');
+    var html = '<div class="time mono">'+b.time+'</div><div class="rail"></div>'+
+      '<input type="checkbox"'+(st[b.id]?' checked':'')+'>'+
+      '<div class="body"><div class="title">'+b.title+'</div>';
+    if(b.detail) html += '<div class="detail">'+b.detail+'</div>';
+    if(b.list){
+      html += '<div class="detail"><ul>';
+      b.list.forEach(function(x){ html += '<li>'+x+'</li>'; });
+      html += '</ul></div>';
+    }
+    if(b.recipe){
+      var r = R[b.recipe];
+      html += '<details class="rec"><summary>'+r.t+'</summary><div class="rbody">'+
+        '<b>You need:</b> '+r.i+'<br><br><b>Method:</b> '+r.s+'</div></details>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+    el.querySelector('input').addEventListener('change', function(e){
+      st[b.id] = e.target.checked;
+      save(); renderAll();
+    });
+    wrap.appendChild(el);
+  });
+
+  var dt = document.getElementById('detox');
+  dt.innerHTML = '';
+  TOGGLES.forEach(function(t){
+    var b = document.createElement('button');
+    b.className = 'toggle' + (st[t.id]?' on':'');
+    b.innerHTML = t.t + '<span class="st mono">'+(st[t.id]?'logged ✓':'tap to log')+'</span>';
+    b.addEventListener('click', function(){ st[t.id] = !st[t.id]; save(); renderAll(); });
+    dt.appendChild(b);
+  });
+
+  document.getElementById('dayProg').style.width = dayPct(sel)+'%';
+}
+
+function renderHeat(){
+  var h = document.getElementById('heat');
+  h.innerHTML = '<div class="wk"></div>';
+  DOW.forEach(function(x){ h.innerHTML += '<div class="hd">'+x[0]+'</div>'; });
+  for(var w=0;w<16;w++){
+    var lbl = document.createElement('div');
+    lbl.className = 'wk mono'; lbl.textContent = 'w'+(w+1);
+    h.appendChild(lbl);
+    for(var j=0;j<7;j++){
+      var i = w*7+j, c = document.createElement('div');
+      c.className = 'cell';
+      if(i>=TOTAL){ c.className += ' out'; }
+      else{
+        var p = dayPct(i);
+        if(p>0){
+          c.style.background = 'var(--diet)';
+          c.style.opacity = (0.25 + 0.75*(p/100)).toFixed(2);
+          c.style.borderColor = 'var(--diet)';
+        }
+        if(i===sel) c.className += ' sel';
+        (function(ix){ c.addEventListener('click', function(){ sel=ix; weekView=Math.floor(ix/7); renderAll(); }); })(i);
+      }
+      h.appendChild(c);
+    }
+  }
+}
+
+function renderPillars(){
+  var cats = [
+    {c:'fitness',n:'Fitness',ids:['fit']},
+    {c:'diet',   n:'Diet',   ids:['bf','lunch','snack','dinner']},
+    {c:'health', n:'Detox',  ids:['alc','smk']},
+    {c:'focus',  n:'Focus',  ids:['focus','shut']},
+    {c:'pro',    n:'Professional',ids:['pro']},
+    {c:'mind',   n:'Mind',   ids:['read','mind']}
+  ];
+  var elapsed = Math.min(TOTAL, Math.max(1, idxOf(new Date())+1));
+  var w = document.getElementById('pillars');
+  w.innerHTML = '';
+  cats.forEach(function(cat){
+    var done = 0, poss = 0;
+    for(var i=0;i<elapsed;i++){
+      var day = buildDay(i), k = key(fromIdx(i)), st = state.done[k]||{};
+      cat.ids.forEach(function(id){
+        var exists = (id==='alc'||id==='smk') ? true : day.blocks.some(function(b){return b.id===id;});
+        if(exists){ poss++; if(st[id]) done++; }
+      });
+    }
+    var pct = poss? Math.round(100*done/poss) : 0;
+    var el = document.createElement('div');
+    el.className = 'pil';
+    el.style.setProperty('--c','var(--'+cat.c+')');
+    el.innerHTML = '<div class="n"><i></i>'+cat.n+'</div><div class="v mono">'+pct+'%</div>'+
+      '<div class="c">'+done+' of '+poss+' so far</div>';
+    w.appendChild(el);
+  });
+}
+
+function renderAll(){ renderMast(); renderStrip(); renderDay(); renderHeat(); renderPillars(); }
+
+/* ---------------- init ---------------- */
+document.getElementById('prevW').addEventListener('click', function(){
+  if(weekView>0){ weekView--; renderAll(); }
+});
+document.getElementById('nextW').addEventListener('click', function(){
+  if(weekView<15){ weekView++; renderAll(); }
+});
+document.getElementById('todayBtn').addEventListener('click', function(){
+  var i = idxOf(new Date());
+  sel = Math.min(TOTAL-1, Math.max(0, i));
+  weekView = Math.floor(sel/7);
+  renderAll();
+});
+
+document.getElementById('exportBtn').addEventListener('click', exportData);
+document.getElementById('importBtn').addEventListener('click', function(){
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', function(e){
+  if(e.target.files && e.target.files[0]) importData(e.target.files[0]);
+  e.target.value = '';
+});
+
+(function boot(){
+  var i = idxOf(new Date());
+  sel = Math.min(TOTAL-1, Math.max(0, i));
+  weekView = Math.floor(sel/7);
+  loadLocal();
+  renderAll();
+  if(!storeOk){
+    flash('Storage blocked — try leaving private mode');
+  }
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(function(e){
+      console.log('offline mode unavailable', e);
+    });
+  }
+})();
+
+})();
+</script>
+</body>
+</html>

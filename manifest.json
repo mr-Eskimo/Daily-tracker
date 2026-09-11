@@ -1,0 +1,16 @@
+{
+  "name": "112 Days",
+  "short_name": "112 Days",
+  "description": "A 112-day daily plan: fitness, diet, focus, craft and reading, tracked day by day.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#e8e9e2",
+  "theme_color": "#e8e9e2",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
